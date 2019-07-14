@@ -1,0 +1,47 @@
+.TH SROAMD 8
+.SH NAME
+sroamd \- simple roaming daemon
+.SH SYNOPSIS
+.B sroamd
+.IR option ...
+[
+.B \-\-
+]
+.IR interface ...
+.SH DESCRIPTION
+.B Sroamd
+makes it possible to seamlessly roam between IP links (e.g. WiFi
+access points) with no changes to clients.  There is no central controller,
+and no tunnelling is involved.
+
+The daemon implements a custom DHCPv4 server, an IPv4 RA server and
+a custom peer-to-peer flooding algorithm.  It depends on hostapd for
+link-layer configuration, and a routing protocol able to efficiently deal
+with host routes (for example Babel).
+.SH OPTIONS
+.TP
+.BI \-d " level"
+Set the verbosity of debugging messages.
+.TP
+.BI \-P " prefix"
+Configure the prefix used for roaming clients.  \TP \BI \-N Configure the
+nameserver address that will be announced to clients over DHCPv4 or IPv6
+RA.
+.TP
+.BI \-a " address"
+Bind the DHCPv4 server to the given address.
+.TP
+.BI \-f " port"
+Set the local port used by the flooding protocol.  If this is not set,
+flooding is disabled.
+.TP
+.BI \-F " address:port"
+Configure a neighbour for the flooding protocol.  There is no automatic
+neighbour discovery, you must configure enough neighbours to ensure that
+your network remains connected.  The remote address must be a unicast
+address, either IPv4 or IPv6.
+.SH SEE ALSO
+.BR babeld (8).
+.SH AUTHOR
+Juliusz Chroboczek
+

@@ -1,0 +1,78 @@
+Sroamd -- the Simple Roaming Daemon
+===================================
+
+Sroamd makes it possible to seamlessly roam between IP links (e.g. WiFi
+access points) with no changes to clients.  There is no central controller,
+and no tunnelling is involved.
+
+The daemon implements a custom DHCPv4 server, an IPv4 RA server and
+a custom peer-to-peer flooding algorithm.  It depends on hostapd for
+link-layer configuration, and a routing protocol able to efficiently deal
+with host routes (for example Babel).
+
+Usage
+-----
+
+Your routers need to all belong to a single routing domain (typically
+a single Babel domain with no internal firewalling), but the nodes running
+sroamd do not need to be neighbours.  In the following, we assume that
+your nodes run Babel over eth0 and use wlan0 as the roaming interface.  We
+also assume that you use 2001:db8:4444::/48 and 192.168.44/24 as the
+prefixes used for roaming hosts.
+
+### Set up the link layer
+
+Run hostapd on the wlan0 interface.  Your `/etc/hostapd/hostapd.conf`
+should say something like
+
+    interface=wlan0
+    ssid=sroam
+    wpa=2
+    wpa_passphrase=topsecret
+    wpa_pairwise=CCMP
+    
+### Set up the IP layer
+
+All of your roaming interfaces must have the same IPv4 address, and they
+should have the same IPv6 link-local address.
+
+    ip addr flush dev wlan0
+    ip addr add 192.168.44.1/24 dev wlan0
+    ip -6 addr flush dev wlan0
+    ip -6 addr add fe80::44/64 dev wlan0
+    
+### Run Babel, redistributing routes to roaming clients
+
+Your routing daemon must be configured to redistribute routes with
+protocol 44.  If using babeld, you could say
+
+    babeld -C 'redistribute proto 44 allow' eth0
+    
+If you're running BIRD, you're on your own.
+
+### Run sroamd
+
+You need to specify:
+
+  * the network prefixes used for roaming (`-P`);
+  * the nameserver(s) announced over DHCPv4 and RA (`-N`);
+  * the local UDP port used by the flooding algorithm (`-f`);
+  * the address and port of two or three remote peers (`-F`) (optional);
+  * the local address of the DHCPv4 server (`-a`) (optional);
+  * the set of interfaces used for roaming.
+  
+In our example, you could say:
+  
+    sroamd -P 2001:db8:4444::/48 -P 192.168.44.0/24 \
+           -f 4444 -F [2001:db8:4444::1234]:4444 \
+           -N 2001:db8:1234::42 -N 10.0.0.42 -a 192.168.44.1 \
+           wlan0
+
+The flooding algorithm relies on normal unicast traffic, so the sroamd
+instances need not be neighbours.  There is no automatic peer discovery,
+you must specify enough remote peer addresses to make sure your network
+remains connected even when some of them crash.
+
+### Find the bugs
+
+This is experimental software.  Things will break.

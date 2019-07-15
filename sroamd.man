@@ -9,39 +9,51 @@ sroamd \- simple roaming daemon
 ]
 .IR interface ...
 .SH DESCRIPTION
-.B Sroamd
-makes it possible to seamlessly roam between IP links (e.g. WiFi
-access points) with no changes to clients.  There is no central controller,
-and no tunnelling is involved.
+The
+.B sroamd
+daemon implements a distributed protocol thatmakes it possible to
+seamlessly roam between IP links (e.g. WiFi access points) with no changes
+to clients.  There is no central controller, and no tunnelling is
+involved.
 
-The daemon implements a custom DHCPv4 server, an IPv4 RA server and
-a custom peer-to-peer flooding algorithm.  It depends on hostapd for
-link-layer configuration, and a routing protocol able to efficiently deal
-with host routes (for example Babel).
+The daemon implements a custom DHCPv4 server, an IPv4 Router Advertisement
+(RA) server, and a custom peer-to-peer flooding algorithm.  It requires
+an external agent such as
+.B hostapd
+to perform link-layer configuration, and a routing protocol such as
+.I Babel
+to distribute host routes within the roaming domain.
 .SH OPTIONS
 .TP
 .BI \-d " level"
 Set the verbosity of debugging messages.
 .TP
 .BI \-P " prefix"
-Configure the prefix used for roaming clients.  \TP \BI \-N Configure the
-nameserver address that will be announced to clients over DHCPv4 or IPv6
-RA.
+Set the prefix used for roaming clients.  This option may be specified
+twice, once with an IPv4 prefix and once with an IPv6 prefix.
+.TP
+.BI \-N " address"
+Configure the nameserver address that will be announced to clients over
+DHCPv4 or IPv6 RA.  This option may be specified multiple times, in which
+case all prefixes will be announced to clients.
 .TP
 .BI \-a " address"
-Bind the DHCPv4 server to the given address.
+Bind the DHCPv4 server to the given address.  This is optional, and if
+used must be set to the IPv4 address assigned to the interface or
+interfaces that support roaming.
 .TP
 .BI \-f " port"
-Set the local port used by the flooding protocol.  If this is not set,
+Set the local UDP port used by the flooding protocol.  If this is not set,
 flooding is disabled.
 .TP
 .BI \-F " address:port"
-Configure a neighbour for the flooding protocol.  There is no automatic
-neighbour discovery, you must configure enough neighbours to ensure that
-your network remains connected.  The remote address must be a unicast
-address, either IPv4 or IPv6.
+Specify the address of a remote peer for the flooding protocol.  There is
+no automatic neighbour discovery, you must configure enough peers to
+ensure that the network remains connected.  The address must be a unicast
+address, either IPv4 or IPv6; in the latter case, the address must be
+specified within square brackets.
 .SH SEE ALSO
 .BR babeld (8).
 .SH AUTHOR
 Juliusz Chroboczek
-
+ 

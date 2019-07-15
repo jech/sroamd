@@ -246,38 +246,45 @@ int parse_addrport(const char *string, unsigned char *a_return,
                    unsigned short *port_return)
 {
     char buf[INET6_ADDRSTRLEN];
-    int rc, port;
-    char *colon;
+    int rc, ret, port;
     struct in_addr ina;
     struct in6_addr ina6;
+    char *colon, *end;
 
     strncpy(buf, string, INET6_ADDRSTRLEN);
     buf[INET6_ADDRSTRLEN - 1] = '\0';
 
-    colon = strchr(buf, ':');
-    if(colon == NULL) {
-        return -1;
-    } else {
-        char *end;
-        port = strtol(colon + 1, &end, 0);
-        if(*end != '\0' || port <= 0 || port > 0xFFFF)
+    if(buf[0] == '[') {
+        char *bracket;
+        bracket = strchr(buf, ']');
+        if(bracket == NULL || *(bracket + 1) != ':')
             return -1;
+        colon = bracket + 1;
+        *bracket = '\0';
+        rc = inet_pton(AF_INET6, buf + 1, &ina6);
+        if(rc <= 0)
+            return -1;
+        memcpy(a_return, &ina6, 16);
+        ret = 6;
+    } else {
+        colon = strchr(buf, ':');
+        if(colon == NULL) {
+            return -1;
+        }
         *colon = '\0';
+        rc = inet_pton(AF_INET, buf, &ina);
+        if(rc <= 0)
+            return -1;
+        memcpy(a_return, &ina, 4);
+        ret = 4;
     }
 
-    rc = inet_pton(AF_INET, buf, &ina);
-    if(rc > 0) {
-        memcpy(a_return, &ina, 4);
-        *port_return = port;
-        return 4;
-    }
-    rc = inet_pton(AF_INET6, buf, &ina6);
-    if(rc > 0) {
-        memcpy(a_return, &ina6, 16);
-        *port_return = port;
-        return 6;
-    }
-    return -1;
+    port = strtol(colon + 1, &end, 0);
+    if(*end != '\0' || port <= 0 || port > 0xFFFF)
+        return -1;
+
+    *port_return = port;
+    return ret;
 }
 
 static const unsigned char zeroes[6];

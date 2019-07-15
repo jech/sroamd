@@ -272,9 +272,10 @@ main(int argc, char **argv)
                 if(af == 4) {
                     memcpy(&sin6.sin6_addr, v4mapped, 12);
                     memcpy((unsigned char*)&sin6.sin6_addr + 12, buf, 4);
-                } else {
+                } else if(af == 6) {
                     memcpy(&sin6.sin6_addr, buf, 16);
-                }
+                } else
+                    goto usage;
                 sin6.sin6_port = htons(port);
                 find_neighbour(&sin6, 1, 0, 1);
             } else {

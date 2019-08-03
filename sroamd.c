@@ -198,11 +198,9 @@ int
 main(int argc, char **argv)
 {
     int rc, opt;
-    unsigned char addr4[4] = {0, 0, 0, 0};
-    const unsigned char zeroes[4] = {0, 0, 0, 0};
 
     while(1) {
-        opt = getopt(argc, argv, "f:a:P:d:N:F:");
+        opt = getopt(argc, argv, "f:P:d:N:F:");
         if(opt < 0)
             break;
 
@@ -215,11 +213,6 @@ main(int argc, char **argv)
                 goto usage;
             flood_port = p;
         }
-            break;
-        case 'a':
-            rc = inet_pton(AF_INET, optarg, &addr4);
-            if(rc < 1)
-                goto usage;
             break;
         case 'P': {
             unsigned char buf[16];
@@ -338,7 +331,7 @@ main(int argc, char **argv)
             exit(1);
         }
 
-        rc = dhcpv4_setup(memcmp(addr4, zeroes, 4) == 0 ? NULL : addr4);
+        rc = dhcpv4_setup();
         if(rc < 0) {
             perror("dhcpv4_setup");
             exit(1);
@@ -525,7 +518,7 @@ main(int argc, char **argv)
 
  usage:
     fprintf(stderr,
-            "Usage: sroamd [-d level] [-P prefix]... [-N nameserver]... [-a address]\n"
+            "Usage: sroamd [-d level] [-P prefix]... [-N nameserver]...\n"
             "              [-f port] [-F addr:port]... [interface]...\n");
     exit(1);
 }

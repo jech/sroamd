@@ -33,7 +33,7 @@ unsigned char dnsv4[16][4];
 int numdnsv4 = 0;
 
 static int
-setup_dhcpv4_socket(const unsigned char *addr)
+setup_dhcpv4_socket()
 {
     int s, rc, one = 1;
     struct sockaddr_in sin;
@@ -73,8 +73,6 @@ setup_dhcpv4_socket(const unsigned char *addr)
 
     memset(&sin, 0, sizeof(sin));
     sin.sin_family = AF_INET;
-    if(addr != NULL)
-        memcpy(&sin.sin_addr, addr, 4);
     sin.sin_port = htons(67);
 
     rc = bind(s, (struct sockaddr*)&sin, sizeof(sin));
@@ -89,9 +87,9 @@ fail:
 }
 
 int
-dhcpv4_setup(const unsigned char *addr)
+dhcpv4_setup()
 {
-    return setup_dhcpv4_socket(addr);
+    return setup_dhcpv4_socket();
 }
 
 void

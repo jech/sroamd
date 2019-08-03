@@ -26,6 +26,7 @@ Run hostapd on the wlan0 interface.  Your `/etc/hostapd/hostapd.conf`
 should say something like
 
     interface=wlan0
+    channel=11
     ssid=sroam
     wpa=2
     wpa_passphrase=topsecret
@@ -58,14 +59,13 @@ You need to specify:
   * the nameserver(s) announced over DHCPv4 and RA (`-N`);
   * the local UDP port used by the flooding algorithm (`-f`);
   * the address and port of two or three remote peers (`-F`) (optional);
-  * the local address of the DHCPv4 server (`-a`) (optional);
   * the set of interfaces used for roaming.
   
 In our example, you could say:
   
     sroamd -P 2001:db8:4444::/48 -P 192.168.44.0/24 \
            -f 4444 -F [2001:db8:4444::1234]:4444 \
-           -N 2001:db8:1234::42 -N 10.0.0.42 -a 192.168.44.1 \
+           -N 2001:db8:1234::42 -N 10.0.0.42 \
            wlan0
 
 The flooding algorithm relies on normal unicast traffic, so the sroamd

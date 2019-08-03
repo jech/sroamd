@@ -25,7 +25,7 @@ extern int numdnsv4;
 
 extern int dhcpv4_socket;
 
-int dhcpv4_setup(const unsigned char *addr);
+int dhcpv4_setup(void);
 int dhcpv4_receive(void);
 void dhcpv4_cleanup(void);
 

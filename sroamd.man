@@ -37,11 +37,6 @@ Configure the nameserver address that will be announced to clients over
 DHCPv4 or IPv6 RA.  This option may be specified multiple times, in which
 case all prefixes will be announced to clients.
 .TP
-.BI \-a " address"
-Bind the DHCPv4 server to the given address.  This is optional, and if
-used must be set to the IPv4 address assigned to the interface or
-interfaces that support roaming.
-.TP
 .BI \-f " port"
 Set the local UDP port used by the flooding protocol.  If this is not set,
 flooding is disabled.

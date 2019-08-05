@@ -27,6 +27,9 @@ should say something like
 
     interface=wlan0
     channel=11
+    hw_mode=g
+    wmm_enabled=1
+    ieee80211n=1
     ssid=sroam
     wpa=2
     wpa_passphrase=topsecret

@@ -86,6 +86,10 @@ ts_minus(struct timespec *d,
         d->tv_nsec = s1->tv_nsec + 1000000000 - s2->tv_nsec;
         d->tv_sec = s1->tv_sec - s2->tv_sec - 1;
     }
+    if(d->tv_sec < 0) {
+        d->tv_sec = 0;
+        d->tv_nsec = 0;
+    }
 }
 
 int

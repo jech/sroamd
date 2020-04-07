@@ -38,8 +38,8 @@ DHCPv4 or IPv6 RA.  This option may be specified multiple times, in which
 case all prefixes will be announced to clients.
 .TP
 .BI \-f " port"
-Set the local UDP port used by the flooding protocol.  If this is not set,
-flooding is disabled.
+Set the server TCP port used by the flooding protocol.  If this is not
+set, we don't act as a server.
 .TP
 .BI \-F " address:port"
 Specify the address of a remote peer for the flooding protocol.  There is

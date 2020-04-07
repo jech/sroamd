@@ -211,7 +211,7 @@ main(int argc, char **argv)
             p = strtol(optarg, &end, 0);
             if(*end != '\0' || p <= 0 || p > 0xFFFF)
                 goto usage;
-            flood_port = p;
+            server_port = p;
         }
             break;
         case 'P': {
@@ -270,7 +270,7 @@ main(int argc, char **argv)
                 } else
                     goto usage;
                 sin6.sin6_port = htons(port);
-                find_neighbour(&sin6, 1, 0, 1);
+                flood_connect(&sin6);
             } else {
                 goto usage;
             }
@@ -339,47 +339,50 @@ main(int argc, char **argv)
     }
 
     while(1) {
-        fd_set readfds;
+        fd_set readfds, writefds;
         int nls = netlink_socket();
         int maxfd;
-        struct timespec deadline;
+        struct timespec now, deadline;
 
         FD_ZERO(&readfds);
+        FD_ZERO(&writefds);
+
         FD_SET(nls, &readfds);
+        maxfd = nls;
+
         if(numinterfaces > 0) {
             FD_SET(ra_socket, &readfds);
+            maxfd = max(maxfd, ra_socket);
             FD_SET(dhcpv4_socket, &readfds);
+            maxfd = max(maxfd, dhcpv4_socket);
         }
-        FD_SET(flood_socket, &readfds);
 
-        maxfd = max(nls, flood_socket);
-        if(numinterfaces > 0)
-            maxfd = max(maxfd, max(ra_socket, dhcpv4_socket));
+        FD_SET(server_socket, &readfds);
+        maxfd = max(maxfd, server_socket);
 
-        if(flood_time.tv_sec > 0) {
-            struct timespec now;
-            clock_gettime(CLOCK_MONOTONIC, &now);
-            ts_minus(&deadline, &flood_time, &now);
-            if(deadline.tv_sec < 0) {
-                deadline.tv_sec = 0;
-                deadline.tv_nsec = 0;
+        for(int i = 0; i < numneighs; i++) {
+            if(neighs[i].fd >= 0) {
+                if(neighs[i].out.len > 0)
+                    FD_SET(neighs[i].fd, &writefds);
+                FD_SET(neighs[i].fd, &readfds);
+                maxfd = max(maxfd, neighs[i].fd);
             }
         }
 
-        rc = pselect(maxfd + 1, &readfds, NULL, NULL,
-                     flood_time.tv_sec > 0 ? &deadline : NULL, NULL);
+        clock_gettime(CLOCK_MONOTONIC, &now);
+        ts_minus(&deadline, &expire_neighs_time, &now);
+        rc = pselect(maxfd + 1, &readfds, &writefds, NULL, &deadline, NULL);
         if(rc < 0 && errno != EINTR) {
             perror("pselect");
             sleep(1);
         }
+        clock_gettime(CLOCK_MONOTONIC, &now);
 
         if(exiting)
             break;
 
         if(dumping) {
             static const char zeroes[8] = {0};
-            struct timespec now;
-            clock_gettime(CLOCK_MONOTONIC, &now);
             printf("Interfaces");
             for(int i = 0; i < numinterfaces; i++)
                 printf(" %s", interfaces[i].ifname);
@@ -462,15 +465,8 @@ main(int argc, char **argv)
                 printf(".\n");
             }
             printf("\n");
-            for(int i = 0; i < numneighbours; i++) {
-                char buf[INET6_ADDRSTRLEN];
-                inet_ntop(AF_INET6, &neighbours[i].addr.sin6_addr,
-                          buf, sizeof(buf));
-                printf("Neighbour %s:%d %ds %ds%s.\n",
-                       buf, ntohs(neighbours[i].addr.sin6_port),
-                       (int)(now.tv_sec - neighbours[i].time),
-                       (int)(now.tv_sec - neighbours[i].send_time),
-                       neighbours[i].permanent ? " (permanent)" : "");
+            for(int i = 0; i < numneighs; i++) {
+                printf("Neighbour %d.\n", neighs[i].fd);
             }
 
             fflush(stdout);
@@ -478,33 +474,35 @@ main(int argc, char **argv)
             dumping = 0;
         }
 
-        if(flood_time.tv_sec > 0) {
-            struct timespec now;
-            clock_gettime(CLOCK_MONOTONIC, &now);
-            if(ts_compare(&flood_time, &now) <= 0) {
-                periodic_flood();
+        if(rc >= 0) {
+            if(FD_ISSET(nls, &readfds)) {
+                rc = netlink_listen();
+                if(rc < 0)
+                    nl_perror(rc, "netlink_listen");
+            }
+
+            if(FD_ISSET(server_socket, &readfds))
+                flood_accept();
+
+            for(int i = 0; i < numneighs; i++) {
+                if(neighs[i].fd >= 0) {
+                    if(FD_ISSET(neighs[i].fd, &readfds))
+                        flood_read(&neighs[i]);
+                    if(FD_ISSET(neighs[i].fd, &writefds))
+                        flood_write(&neighs[i]);
+                }
+            }
+            if(numinterfaces > 0) {
+                if(FD_ISSET(ra_socket, &readfds))
+                    receive_rs();
+
+                if(FD_ISSET(dhcpv4_socket, &readfds))
+                    dhcpv4_receive();
             }
         }
 
-        if(rc <= 0)
-            continue;
-
-        if(FD_ISSET(nls, &readfds)) {
-            rc = netlink_listen();
-            if(rc < 0)
-                nl_perror(rc, "netlink_listen");
-        }
-
-        if(FD_ISSET(flood_socket, &readfds))
-            flood_listen();
-
-        if(numinterfaces > 0) {
-            if(FD_ISSET(ra_socket, &readfds))
-                receive_rs();
-
-            if(FD_ISSET(dhcpv4_socket, &readfds))
-                dhcpv4_receive();
-        }
+        if(ts_compare(&now, &expire_neighs_time) >= 0)
+            expire_neighs();
     }
 
     client_cleanup();

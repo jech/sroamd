@@ -119,7 +119,7 @@ update_lease(const unsigned char *mac, int ipv6,
         doit = extend_datum(datum, time);
         if(doit_return)
             *doit_return = doit;
-        flood(datum, NULL, 0, 1);
+        flood(datum, NULL);
         return datum;
     }
 
@@ -136,7 +136,7 @@ update_lease(const unsigned char *mac, int ipv6,
     if(doit_return)
         *doit_return = doit;
     update_client_routes(mac, lease_address(datum, ipv6), ipv6);
-    flood(datum, NULL, 0, 1);
+    flood(datum, NULL);
     return datum;
 }
 
@@ -199,7 +199,7 @@ update_association(struct interface *interface, const unsigned char *mac,
         if(datum->vallen == 8 &&
            memcmp(datum_val(datum), myid, 8) == 0) {
             extend_datum(datum, time);
-            flood(datum, NULL, 0, 1);
+            flood(datum, NULL);
             return client;
         } else {
             seqno = datum->seqno + 1;
@@ -207,7 +207,7 @@ update_association(struct interface *interface, const unsigned char *mac,
     }
 
     datum = update_datum(key, 7, seqno, myid, 8, time, NULL, NULL);
-    flood(datum, NULL, 0, 1);
+    flood(datum, NULL);
     return client;
 }
 
@@ -230,5 +230,5 @@ flush_association(const unsigned char *mac, int time)
     seqno = datum->seqno + 1;
 
     datum = update_datum(key, 7, seqno, NULL, 0, time, NULL, NULL);
-    flood(datum, NULL, 0, 1);
+    flood(datum, NULL);
 }

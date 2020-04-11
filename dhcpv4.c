@@ -388,7 +388,7 @@ int
 dhcpv4_receive()
 {
     int rc, buflen, doit;
-    const char broadcast_addr[4] = {255, 255, 255, 255};
+    const unsigned char broadcast_addr[4] = {255, 255, 255, 255};
     struct sockaddr_in from, to;
     int dontroute = 1;
     int bufsiz = 1500;

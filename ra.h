@@ -34,6 +34,6 @@ void ra_cleanup(void);
 int send_ra(const unsigned char *prefix, int tm,
             const struct sockaddr_in6 *to, struct interface *interface);
 int receive_rs(void);
-int send_gratuitious_na(struct interface *interface);
+int send_gratuitous_na(struct interface *interface);
 
 

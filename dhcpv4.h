@@ -29,7 +29,7 @@ int dhcpv4_setup(void);
 int dhcpv4_receive(void);
 void dhcpv4_cleanup(void);
 
-int send_gratuitious_arp(const unsigned char *myaddr,
+int send_gratuitous_arp(const unsigned char *myaddr,
                          struct interface *interface,
                          const unsigned char *mac);
 

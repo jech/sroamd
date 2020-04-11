@@ -263,7 +263,7 @@ static const unsigned char all_nodes[16] =
      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
 
 int
-send_gratuitious_na(struct interface *interface)
+send_gratuitous_na(struct interface *interface)
 {
     int buflen = 1024;
     unsigned char buf[buflen], myipv6[16];
@@ -296,7 +296,7 @@ send_gratuitious_na(struct interface *interface)
     }
 
  sendit:
-    debugf("-> Neigbour Advertisement\n");
+    debugf("-> Neighbour Advertisement\n");
     return sendto(ra_socket, buf, i, 0, (struct sockaddr*)&to, sizeof(to));
 }
 

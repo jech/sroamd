@@ -554,7 +554,7 @@ dhcpv4_receive()
 }
 
 int
-send_gratuitious_arp(const unsigned char *myaddr, struct interface *interface,
+send_gratuitous_arp(const unsigned char *myaddr, struct interface *interface,
                      const unsigned char *mac)
 {
     int buflen = 28;

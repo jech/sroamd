@@ -77,13 +77,13 @@ callback(int add, int ifindex, const unsigned char *mac)
 
         rc = interface_v4(interface, myv4);
         if(rc >= 0) {
-            rc = send_gratuitious_arp(myv4, interface, mac);
+            rc = send_gratuitous_arp(myv4, interface, mac);
             if(rc < 0)
-                perror("send_gratuitious_arp");
+                perror("send_gratuitous_arp");
         }
-        rc = send_gratuitious_na(interface);
+        rc = send_gratuitous_na(interface);
         if(rc < 0)
-            perror("send_gratuitious_na");
+            perror("send_gratuitous_na");
     } else {
         flush_association(mac, ASSOCIATION_TIME);
     }

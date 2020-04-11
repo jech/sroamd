@@ -588,7 +588,6 @@ parse_tlv(struct neighbour *neigh)
         }
         debugf("<- Update %d (%d) %ld\n",
                keylen <= 0 ? -1 : (int)body[7], keylen, (long)time);
-        datum = find_datum(body + 7, keylen);
         datum = update_datum(body + 7, keylen, seqno,
                              body + 7 + keylen, len - keylen - 7,
                              time, &doit, &conflict);

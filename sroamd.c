@@ -406,7 +406,7 @@ main(int argc, char **argv)
                         memcpy(ipv6, datum_key(data[i]) + 1, 8);
                         memset(ipv6 + 8, 0, 8);
                         inet_ntop(AF_INET6, ipv6, addr, sizeof(addr));
-                        strncat(addr, "/64", sizeof(addr) - 1);
+                        strncat(addr, "/64", sizeof(addr) - strlen(addr) - 1);
                        } else {
                         strncpy(addr, "(corrupt)", sizeof(addr));
                     }

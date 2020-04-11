@@ -241,11 +241,11 @@ main(int argc, char **argv)
             int af;
             af = parse_address(optarg, buf);
             if(af == 4) {
-                if(numdnsv4 > 16)
+                if(numdnsv4 >= 16)
                     goto usage;
                 memcpy(dnsv4[numdnsv4++], buf, 4);
             } else if(af == 6) {
-                if(numdnsv6 > 16)
+                if(numdnsv6 >= 16)
                     goto usage;
                 memcpy(dnsv6[numdnsv6++], buf, 16);
             } else {

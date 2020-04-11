@@ -56,25 +56,38 @@ If you're running BIRD, you're on your own.
 
 ### Run sroamd
 
-You need to specify:
+Choose an IPv4 prefix (at least /24) and an IPv6 prefix (at least /56) for
+your roaming clients.
 
-  * the network prefixes used for roaming (`-P`);
-  * the nameserver(s) announced over DHCPv4 and RA (`-N`);
-  * the local UDP port used by the flooding algorithm (`-f`);
-  * the address and port of two or three remote peers (`-F`) (optional);
-  * the set of interfaces used for roaming.
-  
-In our example, you could say:
-  
-    sroamd -P 2001:db8:4444::/48 -P 192.168.44.0/24 \
-           -f 4444 -F [2001:db8:4444::1234]:4444 \
-           -N 2001:db8:1234::42 -N 10.0.0.42 \
-           wlan0
+  v4prefix=192.168.44.0/24
+  v6prefix=2001:0db8:1234::/48
 
-The flooding algorithm relies on normal unicast traffic, so the sroamd
-instances need not be neighbours.  There is no automatic peer discovery,
-you must specify enough remote peer addresses to make sure your network
-remains connected even when some of them crash.
+Choose a set of nameservers to advertise to your clients:
+
+  ns1=192.168.43.43
+  ns2=2001:0db8:4343::43
+
+Pick one or two stable sroamd instances, call them A and B, to act as
+flooding servers:
+
+On A:
+
+  sroamd -P $v4prefix -P $v6prefix -N $ns1 -N $ns2 -f 4444 wlan0
+
+On B:
+
+  sroamd -P $v4prefix -P $v6prefix -N $ns1 -N $ns2 -f 4444 -F A:4444 wlan0
+
+On all other sroamd instances:
+
+  sroamd -P $v4prefix -P $v6prefix -N $nameserver -f 4444 -F A:4444 -F B:4444 wlan0
+
+Notes:
+
+  * you must use the same prefixes (-P) on all instances, but you may use
+    different nameservers;
+  * the servers need not act as DHCPv4 and RA servers, in which case they
+    need not run babeld or hostapd and you should omit the interface name.
 
 ### Find the bugs
 

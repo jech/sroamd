@@ -201,6 +201,7 @@ receive_rs()
             hoplimit = *(unsigned char*)CMSG_DATA(cmsg);
             break;
         }
+        cmsg = CMSG_NXTHDR(&msg, cmsg);
     }
 
     if(hoplimit != 255)

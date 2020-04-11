@@ -452,8 +452,11 @@ dhcpv4_receive()
     if(rc < 0)
         return -1;
 
-    if(memcmp(req.sid, zeroes, 4) != 0 && memcmp(req.sid, myaddr, 4) != 0)
+    if(memcmp(req.sid, zeroes, 4) != 0 && memcmp(req.sid, myaddr, 4) != 0) {
+        free(req.cid);
+        free(req.uc);
         return 0;
+    }
 
     debugf("<- DHCPv4 (type %d) %s\n", req.type, interface->ifname);
 

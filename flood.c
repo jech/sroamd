@@ -143,13 +143,8 @@ update_datum(const unsigned char *key, int keylen,
         return NULL;
 
     datum = calloc(1, sizeof(struct datum) + keylen + vallen);
-    if(datum == NULL) {
-        if(updated != NULL)
-            *updated = 0;
-        if(conflict != NULL)
-            *conflict = 0;
+    if(datum == NULL)
         return NULL;
-    }
 
     datum->seqno = seqno;
     datum->keylen = keylen;
@@ -591,7 +586,7 @@ parse_tlv(struct neighbour *neigh)
         datum = update_datum(body + 7, keylen, seqno,
                              body + 7 + keylen, len - keylen - 7,
                              time, &doit, &conflict);
-        if(doit) {
+        if(datum != NULL && doit) {
             if(datum_callback != NULL)
                 datum_callback(datum, conflict);
             flood(datum, neigh);

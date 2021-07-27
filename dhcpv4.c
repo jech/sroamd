@@ -283,7 +283,7 @@ dhcpv4_parse(unsigned char *buf, int buflen,
 #define LONG(_v) DO_HTONL(buf + i, (_v)); i += 4
 
 static int
-dhcpv4_send(int s, struct sockaddr_in *to, int dontroute,
+dhcpv4_send(struct sockaddr_in *to, int dontroute,
             int type, const unsigned char *xid,
             const unsigned char *chaddr, const unsigned char *myaddr,
             const unsigned char *ip, struct interface *interface,
@@ -519,7 +519,7 @@ dhcpv4_receive()
         if(remain < 60)
             goto nak;
 
-        rc = dhcpv4_send(dhcpv4_socket, &to, dontroute,
+        rc = dhcpv4_send(&to, dontroute,
                          req.type == 1 ? 2 : 5, req.xid, req.chaddr, myaddr,
                          addr, interface, netmask, remain);
         if(rc < 0)
@@ -533,7 +533,7 @@ dhcpv4_receive()
         fprintf(stderr, "Received DHCPRELEASE");
         break;
     case 8:                     /* DHCPINFORM */
-        rc = dhcpv4_send(dhcpv4_socket, &to, dontroute,
+        rc = dhcpv4_send(&to, dontroute,
                          5, req.xid, req.chaddr, myaddr,
                          NULL, interface, NULL, 0);
         if(rc < 0)
@@ -548,7 +548,7 @@ dhcpv4_receive()
     if(memcmp(req.giaddr, zeroes, 4) == 0)
         memcpy(&to.sin_addr, broadcast_addr, 4);
     if(req.type == 3)
-        dhcpv4_send(dhcpv4_socket, &to, dontroute, 6, req.xid, req.chaddr,
+        dhcpv4_send(&to, dontroute, 6, req.xid, req.chaddr,
                     myaddr, req.ip, interface, NULL, 0);
  done:
     free(req.cid);
